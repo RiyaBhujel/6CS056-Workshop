@@ -1,15 +1,20 @@
+php
 <?php
 
 use App\Models\Student;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
 
-Route::get("/student/create", function () {
-    return view("student.create");
+
+
+// Show create form
+Route::get('/student/create', function () {
+    return view('student.create');
 });
 
-Route::post("/student", function (Request $request) {
+// Store new student
+Route::post('/student', function (Request $request) {
 
     $validated = $request->validate([
         'name' => 'required|string|max:255',
@@ -21,9 +26,13 @@ Route::post("/student", function (Request $request) {
 
     $student = Student::create($validated);
 
-    return redirect()->route('students.index')
+    return redirect()
+        ->route('students.index')
         ->with('success', "Student {$student->name} created successfully!");
 });
+
+
+//list of students
 
 Route::get('/students', function () {
 
@@ -36,17 +45,9 @@ Route::get('/students', function () {
 })->name('students.index');
 
 
-Route::get('/students/{id}', function ($id) {
-
-    $student = Student::findOrFail($id);
-
-    return view('student.detail', [
-        'student' => $student
-    ]);
-
-});
 
 
+// Show edit form
 Route::get('/students/{id}/edit', function ($id) {
 
     $student = Student::findOrFail($id);
@@ -58,22 +59,24 @@ Route::get('/students/{id}/edit', function ($id) {
 });
 
 
+// Update student
 Route::put('/students/{id}', function (Request $request, $id) {
 
     $student = Student::findOrFail($id);
 
     $validated = $request->validate([
+
         'name' => 'required|string|max:255',
 
         'email' => [
             'required',
             'email',
             'max:255',
-            Rule::unique('students')->ignore($student->id)
+            Rule::unique('students')->ignore($student->id),
         ],
 
         'phone' => 'required|string|max:20',
-        'address' => 'nullable|string',
+        'address' => 'nullable|string|max:500',
         'date_of_birth' => 'nullable|date',
     ]);
 
@@ -82,14 +85,29 @@ Route::put('/students/{id}', function (Request $request, $id) {
     return redirect('/students/' . $student->id)
         ->with('success', 'Student updated successfully!');
 });
-Route::delete('/students/{id}', function ($id) {
-$student = Student::findOrFail($id);
 
-$student->delete();
 
-return redirect('/students')
-->with(
-'success',
-'Student deleted successfully!'
-);
+//details
+
+Route::get('/students/{id}', function ($id) {
+
+    $student = Student::findOrFail($id);
+
+    return view('student.detail', [
+        'student' => $student
+    ]);
+
 });
+
+//delete
+
+Route::delete('/students/{id}', function ($id) {
+
+    $student = Student::findOrFail($id);
+
+    $student->delete();
+
+    return redirect('/students')
+        ->with('success', 'Student deleted successfully!');
+});
+
